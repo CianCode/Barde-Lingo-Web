@@ -1,0 +1,14 @@
+{
+    "agents": [
+        "copilot"
+    ],
+    "guidelines": true,
+    "packages": [
+        "laravel/fortify"
+    ],
+    "skills": [
+        "wayfinder-development",
+        "pest-testing",
+        "developing-with-fortify"
+    ]
+}
