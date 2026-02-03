@@ -4,11 +4,11 @@ import {
     ChevronRight,
     Folder,
     FolderPlus,
-    GraduationCap,
     LayoutGrid,
     MessageSquare,
     Plus,
     Settings,
+    FileText,
 } from 'lucide-react';
 import { useState } from 'react';
 import { CreateCourseDialog } from '@/components/create-course-dialog';
@@ -106,115 +106,113 @@ export function AppSidebar() {
                             </Button>
                         </div>
                         <SidebarMenu>
-                            {!courses || courses.length === 0 ? (
+                            {courses?.map((course: any) => (
+                                <Collapsible
+                                    key={course.id}
+                                    asChild
+                                    open={openCourses[course.id] || false}
+                                    onOpenChange={(open) =>
+                                        setOpenCourses((prev) => ({
+                                            ...prev,
+                                            [course.id]: open,
+                                        }))
+                                    }
+                                    className="group/collapsible"
+                                >
+                                    <SidebarMenuItem>
+                                        <ContextMenu>
+                                            <ContextMenuTrigger asChild>
+                                                <CollapsibleTrigger asChild>
+                                                    <SidebarMenuButton tooltip={course.title}>
+                                                        <BookOpen />
+                                                        <span>{course.title}</span>
+                                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                    </SidebarMenuButton>
+                                                </CollapsibleTrigger>
+                                            </ContextMenuTrigger>
+                                            <ContextMenuContent>
+                                                <ContextMenuItem asChild>
+                                                    <Link href={`/courses/${course.id}`}>
+                                                        <Settings className="mr-2 h-4 w-4" />
+                                                        Manage Course
+                                                    </Link>
+                                                </ContextMenuItem>
+                                                <ContextMenuItem
+                                                    onClick={() => {
+                                                        setSelectedCourseForModule({ id: course.id, title: course.title });
+                                                        setCreateModuleOpen(true);
+                                                    }}
+                                                >
+                                                    <FolderPlus className="mr-2 h-4 w-4" />
+                                                    Add Module
+                                                </ContextMenuItem>
+                                            </ContextMenuContent>
+                                        </ContextMenu>
+                                        <CollapsibleContent>
+                                            <SidebarMenuSub>
+                                                {course.modules?.map((module: any) => (
+                                                    <SidebarMenuSubItem key={module.id}>
+                                                        <SidebarMenuSubButton asChild>
+                                                            <Link href={`/dashboard/module/${module.id}`}>
+                                                                <Folder className="h-4 w-4" />
+                                                                <span>{module.title}</span>
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    </SidebarMenuSubItem>
+                                                ))}
+                                            </SidebarMenuSub>
+                                        </CollapsibleContent>
+                                    </SidebarMenuItem>
+                                </Collapsible>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Student Enrolled Courses Section - CORRIGÉ */}
+                {isStudent && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>My Courses</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {!enrolledCourses || enrolledCourses.length === 0 ? (
                                 <SidebarMenuItem>
                                     <div className="px-2 py-1 text-sm text-muted-foreground">
                                         No courses yet
                                     </div>
                                 </SidebarMenuItem>
                             ) : (
-                                courses.map((course: any) => (
-                                    <Collapsible
-                                        key={course.id}
-                                        asChild
-                                        open={openCourses[course.id] || false}
-                                        onOpenChange={(open) =>
-                                            setOpenCourses((prev) => ({
-                                                ...prev,
-                                                [course.id]: open,
-                                            }))
-                                        }
-                                        className="group/collapsible"
-                                    >
+                                enrolledCourses.map((course: any) => (
+                                    <Collapsible key={course.id} asChild className="group/collapsible">
                                         <SidebarMenuItem>
-                                            <ContextMenu>
-                                                <ContextMenuTrigger asChild>
-                                                    <CollapsibleTrigger asChild>
-                                                        <SidebarMenuButton
-                                                            tooltip={
-                                                                course.title
-                                                            }
-                                                        >
-                                                            <BookOpen />
-                                                            <span>
-                                                                {course.title}
-                                                            </span>
-                                                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                                        </SidebarMenuButton>
-                                                    </CollapsibleTrigger>
-                                                </ContextMenuTrigger>
-                                                <ContextMenuContent>
-                                                    <ContextMenuItem asChild>
-                                                        <Link
-                                                            href={`/courses/${course.id}`}
-                                                        >
-                                                            <Settings className="mr-2 h-4 w-4" />
-                                                            Manage Course
-                                                        </Link>
-                                                    </ContextMenuItem>
-                                                    <ContextMenuItem
-                                                        onClick={() => {
-                                                            setSelectedCourseForModule(
-                                                                {
-                                                                    id: course.id,
-                                                                    title: course.title,
-                                                                },
-                                                            );
-                                                            setCreateModuleOpen(
-                                                                true,
-                                                            );
-                                                        }}
-                                                    >
-                                                        <FolderPlus className="mr-2 h-4 w-4" />
-                                                        Add Module
-                                                    </ContextMenuItem>
-                                                </ContextMenuContent>
-                                            </ContextMenu>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton tooltip={course.title}>
+                                                    <BookOpen />
+                                                    <span>{course.title}</span>
+                                                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
                                             <CollapsibleContent>
                                                 <SidebarMenuSub>
-                                                    {course.modules?.map(
-                                                        (module: any) => (
-                                                            <SidebarMenuSubItem
-                                                                key={module.id}
-                                                            >
-                                                                <SidebarMenuSubButton
-                                                                    asChild
-                                                                >
-                                                                    <Link
-                                                                        href={`/dashboard/module/${module.id}`}
-                                                                    >
-                                                                        <Folder className="h-4 w-4" />
-                                                                        <span>
-                                                                            {
-                                                                                module.title
-                                                                            }
-                                                                        </span>
-                                                                    </Link>
-                                                                </SidebarMenuSubButton>
-                                                            </SidebarMenuSubItem>
-                                                        ),
-                                                    )}
-                                                    <SidebarMenuSubItem>
-                                                        <SidebarMenuSubButton
-                                                            onClick={() => {
-                                                                setSelectedCourseForModule(
-                                                                    {
-                                                                        id: course.id,
-                                                                        title: course.title,
-                                                                    },
-                                                                );
-                                                                setCreateModuleOpen(
-                                                                    true,
-                                                                );
-                                                            }}
-                                                            className="cursor-pointer text-muted-foreground"
-                                                        >
-                                                            <FolderPlus className="h-4 w-4" />
-                                                            <span>
-                                                                Add Module
-                                                            </span>
-                                                        </SidebarMenuSubButton>
-                                                    </SidebarMenuSubItem>
+                                                    {course.modules?.map((module: any) => (
+                                                        <div key={module.id} className="mb-2">
+                                                            {/* Titre du Module */}
+                                                            <div className="flex items-center px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                                <Folder className="mr-2 h-3 w-3" />
+                                                                {module.title}
+                                                            </div>
+                                                            {/* Liste des leçons du module */}
+                                                            {module.lessons?.map((lesson: any) => (
+                                                                <SidebarMenuSubItem key={lesson.id}>
+                                                                    <SidebarMenuSubButton asChild>
+                                                                        <Link href={`/lessons/${lesson.id}`}>
+                                                                            <FileText className="mr-2 h-3 w-3" />
+                                                                            <span className="truncate">{lesson.title}</span>
+                                                                        </Link>
+                                                                    </SidebarMenuSubButton>
+                                                                </SidebarMenuSubItem>
+                                                            ))}
+                                                        </div>
+                                                    ))}
                                                 </SidebarMenuSub>
                                             </CollapsibleContent>
                                         </SidebarMenuItem>
@@ -225,37 +223,7 @@ export function AppSidebar() {
                     </SidebarGroup>
                 )}
 
-                {/* Student Enrolled Courses Section */}
-                {isStudent && (
-                    <SidebarGroup>
-                        <SidebarGroupLabel>My Courses</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {!enrolledCourses ||
-                            enrolledCourses.length === 0 ? (
-                                <SidebarMenuItem>
-                                    <div className="px-2 py-1 text-sm text-muted-foreground">
-                                        No courses yet
-                                    </div>
-                                </SidebarMenuItem>
-                            ) : (
-                                enrolledCourses.map((course: any) => (
-                                    <SidebarMenuItem key={course.id}>
-                                        <SidebarMenuButton asChild>
-                                            <Link
-                                                href={'/courses/' + course.id}
-                                            >
-                                                <BookOpen />
-                                                <span>{course.title}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))
-                            )}
-                        </SidebarMenu>
-                    </SidebarGroup>
-                )}
-
-                {/* Chats Section - For Teachers and Students */}
+                {/* Chats Section */}
                 {(isTeacher || user?.role === 'student') && (
                     <SidebarGroup>
                         <SidebarGroupLabel>
@@ -266,11 +234,7 @@ export function AppSidebar() {
                                 <SidebarMenuButton asChild>
                                     <Link href="/conversations">
                                         <MessageSquare />
-                                        <span>
-                                            {isTeacher
-                                                ? 'All Conversations'
-                                                : 'My Messages'}
-                                        </span>
+                                        <span>{isTeacher ? 'All Conversations' : 'My Messages'}</span>
                                         {conversations?.unreadCount > 0 && (
                                             <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
                                                 {conversations.unreadCount}
@@ -289,7 +253,7 @@ export function AppSidebar() {
                 <NavUser />
             </SidebarFooter>
 
-            {/* Dialogs */}
+            {/* Dialogs pour Profs uniquement */}
             {isTeacher && languages && (
                 <CreateCourseDialog
                     open={createCourseOpen}

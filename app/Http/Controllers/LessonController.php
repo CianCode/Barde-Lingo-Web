@@ -12,8 +12,22 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
+
 class LessonController extends Controller
 {
+
+    /**
+     * Display the specified lesson (lecture seule pour étudiants).
+     */
+    public function show(Lesson $lesson): Response
+    {
+        // On charge le module, le cours, les contenus et exercices de la leçon
+        $lesson->load(['module.course', 'contents', 'exercises.questions.options']);
+
+        return Inertia::render('lessons/show', [
+            'lesson' => $lesson,
+        ]);
+    }
     public function store(StoreLessonRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -93,6 +107,9 @@ class LessonController extends Controller
                         'order' => $index,
                     ]);
                     $existingQuestionIds[] = $question->id;
+                } else {
+                    // Si la question n'existe pas, on saute la synchronisation des options
+                    continue;
                 }
             } else {
                 // Create new question
@@ -104,33 +121,35 @@ class LessonController extends Controller
                 $existingQuestionIds[] = $question->id;
             }
 
-            // Sync options
-            $existingOptionIds = [];
-            foreach ($questionData['options'] as $optionIndex => $optionData) {
-                if (isset($optionData['id'])) {
-                    // Update existing option
-                    $option = $question->options()->find($optionData['id']);
-                    if ($option) {
-                        $option->update([
+            // Sync options seulement si $question n'est pas null
+            if ($question) {
+                $existingOptionIds = [];
+                foreach ($questionData['options'] as $optionIndex => $optionData) {
+                    if (isset($optionData['id'])) {
+                        // Update existing option
+                        $option = $question->options()->find($optionData['id']);
+                        if ($option) {
+                            $option->update([
+                                'option_text' => $optionData['option_text'],
+                                'is_correct' => $optionData['is_correct'],
+                                'order' => $optionIndex,
+                            ]);
+                            $existingOptionIds[] = $option->id;
+                        }
+                    } else {
+                        // Create new option
+                        $option = $question->options()->create([
                             'option_text' => $optionData['option_text'],
                             'is_correct' => $optionData['is_correct'],
                             'order' => $optionIndex,
                         ]);
                         $existingOptionIds[] = $option->id;
                     }
-                } else {
-                    // Create new option
-                    $option = $question->options()->create([
-                        'option_text' => $optionData['option_text'],
-                        'is_correct' => $optionData['is_correct'],
-                        'order' => $optionIndex,
-                    ]);
-                    $existingOptionIds[] = $option->id;
                 }
-            }
 
-            // Delete removed options
-            $question->options()->whereNotIn('id', $existingOptionIds)->delete();
+                // Delete removed options
+                $question->options()->whereNotIn('id', $existingOptionIds)->delete();
+            }
         }
 
         // Delete removed questions
