@@ -47,16 +47,11 @@ export default function AnimatedNavbar({
                     const shouldBeScrolled = currentScrollY > 50;
                     if (shouldBeScrolled !== isScrolled) {
                         setIsScrolled(shouldBeScrolled);
-
+                        
                         // Animate navbar transformation
                         if (navRef.current) {
                             gsap.to(navRef.current, {
-                                y:
-                                    shouldBeScrolled &&
-                                    scrollDirection === 'down' &&
-                                    currentScrollY > 200
-                                        ? -100
-                                        : 0,
+                                y: shouldBeScrolled && scrollDirection === 'down' && currentScrollY > 200 ? -100 : 0,
                                 duration: 0.3,
                                 ease: 'power2.out',
                             });
@@ -77,45 +72,40 @@ export default function AnimatedNavbar({
         window.addEventListener('scroll', handleScroll, { passive: true });
 
         // Initial animation on mount
-        if (
-            navRef.current &&
-            logoRef.current &&
-            linksRef.current &&
-            buttonsRef.current
-        ) {
+        if (navRef.current && logoRef.current && linksRef.current && buttonsRef.current) {
             const tl = gsap.timeline();
-
+            
             tl.fromTo(
                 logoRef.current,
                 { opacity: 0, x: -50, scale: 0.8 },
-                { opacity: 1, x: 0, scale: 1, duration: 1, ease: 'power3.out' },
+                { opacity: 1, x: 0, scale: 1, duration: 1, ease: 'power3.out' }
             )
-                .fromTo(
-                    linksRef.current.children,
-                    { opacity: 0, y: -30, rotateX: -90 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        rotateX: 0,
-                        duration: 0.8,
-                        stagger: 0.1,
-                        ease: 'back.out(1.2)',
-                    },
-                    '-=0.6',
-                )
-                .fromTo(
-                    buttonsRef.current.children,
-                    { opacity: 0, scale: 0, rotate: -180 },
-                    {
-                        opacity: 1,
-                        scale: 1,
-                        rotate: 0,
-                        duration: 0.8,
-                        stagger: 0.15,
-                        ease: 'elastic.out(1, 0.6)',
-                    },
-                    '-=0.5',
-                );
+            .fromTo(
+                linksRef.current.children,
+                { opacity: 0, y: -30, rotateX: -90 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    rotateX: 0,
+                    duration: 0.8,
+                    stagger: 0.1,
+                    ease: 'back.out(1.2)',
+                },
+                '-=0.6'
+            )
+            .fromTo(
+                buttonsRef.current.children,
+                { opacity: 0, scale: 0, rotate: -180 },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    rotate: 0,
+                    duration: 0.8,
+                    stagger: 0.15,
+                    ease: 'elastic.out(1, 0.6)',
+                },
+                '-=0.5'
+            );
         }
 
         return () => window.removeEventListener('scroll', handleScroll);
@@ -126,18 +116,13 @@ export default function AnimatedNavbar({
         if (mobileMenuRef.current) {
             if (isMobileMenuOpen) {
                 const tl = gsap.timeline();
-
+                
                 tl.fromTo(
                     mobileMenuRef.current,
                     { opacity: 0, y: -30, scale: 0.95 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        duration: 0.4,
-                        ease: 'power3.out',
-                    },
-                ).fromTo(
+                    { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }
+                )
+                .fromTo(
                     mobileMenuRef.current.querySelectorAll('.mobile-menu-item'),
                     { opacity: 0, x: -30, rotateY: -20 },
                     {
@@ -148,7 +133,7 @@ export default function AnimatedNavbar({
                         stagger: 0.08,
                         ease: 'power2.out',
                     },
-                    '-=0.2',
+                    '-=0.2'
                 );
             } else {
                 gsap.to(mobileMenuRef.current, {
@@ -166,13 +151,13 @@ export default function AnimatedNavbar({
         if (element) {
             // Smooth animated scroll
             const targetPosition = element.offsetTop - 100;
-
+            
             gsap.to(window, {
                 scrollTo: { y: targetPosition, autoKill: true },
                 duration: 1.2,
                 ease: 'power3.inOut',
             });
-
+            
             setIsMobileMenuOpen(false);
         }
     };
@@ -183,28 +168,23 @@ export default function AnimatedNavbar({
                 ref={navRef}
                 className={`fixed right-0 left-0 z-50 mx-auto transition-all duration-500 ${
                     isScrolled
-                        ? 'top-4 w-[calc(100%-1rem)] max-w-7xl rounded-2xl border border-gray-200 bg-white/90 shadow-xl backdrop-blur-md sm:w-[calc(100%-2rem)] dark:border-gray-800 dark:bg-[#1a1a1a]/90'
+                        ? 'top-4 w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-7xl rounded-2xl border border-gray-200 bg-white/90 shadow-xl backdrop-blur-md dark:border-gray-800 dark:bg-[#1a1a1a]/90'
                         : 'top-0 w-full bg-white/50 backdrop-blur-sm dark:bg-[#0a0a0a]/50'
                 }`}
             >
                 <div
                     className={`mx-auto flex items-center justify-between transition-all duration-300 ${
-                        isScrolled
-                            ? 'px-4 py-3 sm:px-6'
-                            : 'px-4 py-4 sm:px-6 lg:px-8'
+                        isScrolled ? 'px-4 sm:px-6 py-3' : 'px-4 sm:px-6 lg:px-8 py-4'
                     }`}
                 >
                     {/* Logo - Left */}
-                    <div
-                        ref={logoRef}
-                        className="flex items-center gap-2 sm:gap-3"
-                    >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-600 shadow-md sm:h-10 sm:w-10 dark:bg-purple-500">
-                            <span className="text-lg font-bold text-white sm:text-xl">
+                    <div ref={logoRef} className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-purple-600 shadow-md dark:bg-purple-500">
+                            <span className="text-lg sm:text-xl font-bold text-white">
                                 B
                             </span>
                         </div>
-                        <span className="text-lg font-semibold text-[#1b1b18] sm:text-xl dark:text-[#EDEDEC]">
+                        <span className="text-lg sm:text-xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">
                             {name || 'BardeLingo'}
                         </span>
                     </div>
@@ -212,23 +192,23 @@ export default function AnimatedNavbar({
                     {/* Desktop Navigation Links - Center */}
                     <div
                         ref={linksRef}
-                        className="hidden items-center gap-6 lg:flex xl:gap-8"
+                        className="hidden lg:flex items-center gap-6 xl:gap-8"
                     >
                         <button
                             onClick={() => scrollToSection('features')}
-                            className="text-sm font-medium text-[#1b1b18] transition-all hover:scale-105 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:text-purple-400"
+                            className="text-sm font-medium text-[#1b1b18] transition-all hover:text-purple-600 hover:scale-105 dark:text-[#EDEDEC] dark:hover:text-purple-400"
                         >
                             Features
                         </button>
                         <button
                             onClick={() => scrollToSection('courses')}
-                            className="text-sm font-medium text-[#1b1b18] transition-all hover:scale-105 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:text-purple-400"
+                            className="text-sm font-medium text-[#1b1b18] transition-all hover:text-purple-600 hover:scale-105 dark:text-[#EDEDEC] dark:hover:text-purple-400"
                         >
                             Courses
                         </button>
                         <button
                             onClick={() => scrollToSection('about')}
-                            className="text-sm font-medium text-[#1b1b18] transition-all hover:scale-105 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:text-purple-400"
+                            className="text-sm font-medium text-[#1b1b18] transition-all hover:text-purple-600 hover:scale-105 dark:text-[#EDEDEC] dark:hover:text-purple-400"
                         >
                             About
                         </button>
@@ -237,14 +217,11 @@ export default function AnimatedNavbar({
                     {/* Right Side - Auth Buttons + Mobile Menu */}
                     <div className="flex items-center gap-2 sm:gap-3">
                         {/* Desktop Auth Buttons */}
-                        <div
-                            ref={buttonsRef}
-                            className="hidden items-center gap-2 sm:flex sm:gap-3"
-                        >
+                        <div ref={buttonsRef} className="hidden sm:flex items-center gap-2 sm:gap-3">
                             {auth.user ? (
                                 <Link
                                     href={dashboard()}
-                                    className="inline-block rounded-full border border-gray-200 bg-white px-4 py-2 text-xs leading-normal font-medium text-[#1b1b18] transition-all hover:scale-105 hover:border-gray-300 hover:shadow-lg sm:px-6 sm:text-sm dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-[#EDEDEC] dark:hover:border-gray-600"
+                                    className="inline-block rounded-full border border-gray-200 bg-white px-4 sm:px-6 py-2 text-xs sm:text-sm leading-normal font-medium text-[#1b1b18] transition-all hover:border-gray-300 hover:shadow-lg hover:scale-105 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-[#EDEDEC] dark:hover:border-gray-600"
                                 >
                                     Dashboard
                                 </Link>
@@ -252,14 +229,14 @@ export default function AnimatedNavbar({
                                 <>
                                     <Link
                                         href={login()}
-                                        className="hidden rounded-full border border-transparent px-4 py-2 text-xs leading-normal font-medium text-[#1b1b18] transition-all hover:scale-105 hover:text-purple-600 sm:px-6 sm:text-sm md:inline-block dark:text-[#EDEDEC] dark:hover:text-purple-400"
+                                        className="hidden md:inline-block rounded-full border border-transparent px-4 sm:px-6 py-2 text-xs sm:text-sm leading-normal font-medium text-[#1b1b18] transition-all hover:text-purple-600 hover:scale-105 dark:text-[#EDEDEC] dark:hover:text-purple-400"
                                     >
                                         Login
                                     </Link>
                                     {canRegister && (
                                         <Link
                                             href={register()}
-                                            className="inline-block rounded-full bg-purple-600 px-4 py-2 text-xs leading-normal font-medium text-white transition-all hover:scale-105 hover:bg-purple-700 hover:shadow-xl sm:px-6 sm:text-sm dark:bg-purple-500 dark:hover:bg-purple-600"
+                                            className="inline-block rounded-full bg-purple-600 px-4 sm:px-6 py-2 text-xs sm:text-sm leading-normal font-medium text-white transition-all hover:shadow-xl hover:scale-105 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
                                         >
                                             Get Started
                                         </Link>
@@ -273,9 +250,7 @@ export default function AnimatedNavbar({
                             variant="ghost"
                             size="icon"
                             className="lg:hidden"
-                            onClick={() =>
-                                setIsMobileMenuOpen(!isMobileMenuOpen)
-                            }
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
                             {isMobileMenuOpen ? (
@@ -298,22 +273,22 @@ export default function AnimatedNavbar({
                 >
                     <div className="mx-4 rounded-2xl border border-gray-200 bg-white/95 p-6 shadow-2xl backdrop-blur-md dark:border-gray-800 dark:bg-[#1a1a1a]/95">
                         {/* Mobile Navigation Links */}
-                        <div className="mb-6 space-y-4">
+                        <div className="space-y-4 mb-6">
                             <button
                                 onClick={() => scrollToSection('features')}
-                                className="mobile-menu-item block w-full rounded-lg px-4 py-3 text-left text-base font-medium text-[#1b1b18] transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
+                                className="mobile-menu-item block w-full text-left px-4 py-3 text-base font-medium text-[#1b1b18] rounded-lg transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
                             >
                                 Features
                             </button>
                             <button
                                 onClick={() => scrollToSection('courses')}
-                                className="mobile-menu-item block w-full rounded-lg px-4 py-3 text-left text-base font-medium text-[#1b1b18] transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
+                                className="mobile-menu-item block w-full text-left px-4 py-3 text-base font-medium text-[#1b1b18] rounded-lg transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
                             >
                                 Courses
                             </button>
                             <button
                                 onClick={() => scrollToSection('about')}
-                                className="mobile-menu-item block w-full rounded-lg px-4 py-3 text-left text-base font-medium text-[#1b1b18] transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
+                                className="mobile-menu-item block w-full text-left px-4 py-3 text-base font-medium text-[#1b1b18] rounded-lg transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#EDEDEC] dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
                             >
                                 About
                             </button>

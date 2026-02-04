@@ -33,7 +33,11 @@ class DashboardController extends Controller
         // Student-specific data
         if ($user->role === 'student') {
             $enrolledCourses = $user->enrolledCourses()
-                ->with(['language', 'teacher'])
+                ->with([
+                    'language',
+                    'teacher',
+                    'modules.lessons',
+                ])
                 ->wherePivot('completed_at', null)
                 ->get();
 

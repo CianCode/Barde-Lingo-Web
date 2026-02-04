@@ -8,32 +8,13 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
         $user = $request->user();
@@ -44,21 +25,23 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
             ],
+            'flash' => [
+                'exerciseResult' => $request->session()->get('exerciseResult'),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
 
-        // Share teacher's courses for sidebar
+        // Pour les enseignants
         if ($user && $user->role === 'teacher') {
             $sharedData['courses'] = $user->taughtCourses()
                 ->with(['modules.lessons'])
-                ->orderBy('order')
+                ->orderBy('order', 'asc')
                 ->get();
 
             $sharedData['languages'] = Language::where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'code']);
 
-            // Share conversation data with unread count
             $sharedData['conversations'] = [
                 'unreadCount' => \App\Models\Conversation::where('teacher_id', $user->id)
                     ->whereHas('messages', function ($query) use ($user) {
@@ -69,8 +52,65 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
-        // Share conversation data for students
+        // Pour les étudiants
         if ($user && $user->role === 'student') {
+            $enrolledCourses = $user->enrolledCourses()
+                ->with([
+                    'modules.lessons.exercises',
+                    'modules.lessons.progress' => function ($query) use ($user) {
+                        $query->where('user_id', $user->id);
+                    },
+                ])
+                ->orderBy('courses.order', 'asc')
+                ->get(['courses.*']);
+
+            // Calculate progress for each module
+            foreach ($enrolledCourses as $course) {
+                foreach ($course->modules as $module) {
+                    $totalLessons = $module->lessons->count();
+                    $completedLessons = 0;
+                    $failedLessons = 0;
+
+                    foreach ($module->lessons as $lesson) {
+                        $progress = $lesson->progress->first();
+                        $hasExercises = $lesson->exercises->count() > 0;
+
+                        if ($hasExercises && $progress) {
+                            // Lesson with exercises: check passing score
+                            if ($progress->is_completed) {
+                                $completedLessons++;
+                            } elseif ($progress->attempts > 0) {
+                                $failedLessons++;
+                            }
+                        } elseif (! $hasExercises && $progress && $progress->views > 0) {
+                            // Lesson without exercises: completed on first view
+                            $completedLessons++;
+                        }
+                    }
+
+                    $percentage = $totalLessons > 0 ? ($completedLessons / $totalLessons) * 100 : 0;
+                    $variant = 'neutral';
+
+                    if ($completedLessons === $totalLessons && $totalLessons > 0) {
+                        $variant = 'success';
+                    } elseif ($failedLessons > 0) {
+                        $variant = 'danger';
+                    } elseif ($completedLessons > 0) {
+                        $variant = 'success';
+                    }
+
+                    $module->progress = [
+                        'percentage' => round($percentage, 1),
+                        'variant' => $variant,
+                        'completed' => $completedLessons,
+                        'total' => $totalLessons,
+                        'failed' => $failedLessons,
+                    ];
+                }
+            }
+
+            $sharedData['enrolledCourses'] = $enrolledCourses;
+
             $sharedData['conversations'] = [
                 'unreadCount' => \App\Models\Conversation::where('student_id', $user->id)
                     ->whereHas('messages', function ($query) use ($user) {
