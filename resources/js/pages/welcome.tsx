@@ -60,7 +60,7 @@ export default function Welcome({
                 {role === 'student' && (
                     <section className="px-6 py-12 lg:px-8">
                         <div className="mx-auto max-w-4xl">
-                            <h2 className="mb-6 text-3xl font-bold text-center">
+                            <h2 className="mb-6 text-center text-3xl font-bold">
                                 Browse Courses
                             </h2>
                             {courses.length > 0 ? (
@@ -68,16 +68,20 @@ export default function Welcome({
                                     {courses.map((course) => (
                                         <div
                                             key={course.id}
-                                            className="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-neutral-900 shadow-sm"
+                                            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-neutral-900"
                                         >
-                                            <h3 className="text-xl font-semibold mb-2">
+                                            <h3 className="mb-2 text-xl font-semibold">
                                                 {course.title}
                                             </h3>
                                             <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-                                                {course.description || 'No description'}
+                                                {course.description ||
+                                                    'No description'}
                                             </p>
-                                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-                                                <span>Level: {course.level || 'N/A'}</span>
+                                            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+                                                <span>
+                                                    Level:{' '}
+                                                    {course.level || 'N/A'}
+                                                </span>
                                                 <span
                                                     className={
                                                         course.is_published
@@ -104,28 +108,30 @@ export default function Welcome({
                                                         </DialogTitle>
                                                         <DialogDescription>
                                                             Êtes-vous sûr de
-                                                            vouloir commencer
-                                                            le cours «{' '}
+                                                            vouloir commencer le
+                                                            cours «{' '}
                                                             {course.title} » ?
                                                         </DialogDescription>
                                                     </DialogHeader>
-                                                    <DialogFooter className="flex flex-col gap-2 items-center">
+                                                    <DialogFooter className="flex flex-col items-center gap-2">
                                                         <Button
                                                             onClick={() => {
                                                                 router.post(
                                                                     `/courses/${course.id}/enroll`,
                                                                     {},
                                                                     {
-                                                                        onSuccess: () =>
-                                                                            router.visit(
-                                                                                '/dashboard'
-                                                                            ),
-                                                                    }
+                                                                        onSuccess:
+                                                                            () =>
+                                                                                router.visit(
+                                                                                    '/dashboard',
+                                                                                ),
+                                                                    },
                                                                 );
                                                             }}
                                                             className="w-56 max-w-full"
                                                         >
-                                                            Oui, commencer le cours
+                                                            Oui, commencer le
+                                                            cours
                                                         </Button>
                                                         <DialogClose asChild>
                                                             <Button
