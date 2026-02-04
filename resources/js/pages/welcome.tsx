@@ -1,6 +1,5 @@
-import { Head, router } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
-import AnimatedNavbar from '@/components/animated-navbar';
+import { Head, router, usePage } from '@inertiajs/react';
+import Navbar from '@/components/navbar';
 import {
     Dialog,
     DialogTrigger,
@@ -31,20 +30,6 @@ import {
     Globe,
 } from 'lucide-react';
 
-gsap.registerPlugin(ScrollTrigger);
-
-interface Course {
-    id: number;
-    title: string;
-    description?: string;
-    level?: string;
-    language?: {
-        name: string;
-        flag_icon: string;
-    };
-    is_published?: boolean;
-}
-
 export default function Welcome({
     canRegister = true,
     courses = [],
@@ -52,108 +37,7 @@ export default function Welcome({
     canRegister?: boolean;
     courses?: Course[];
 }) {
-    const heroRef = useRef<HTMLDivElement>(null);
-    const featuresRef = useRef<HTMLDivElement>(null);
-    const coursesRef = useRef<HTMLDivElement>(null);
-    const statsRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        // Hero animations
-        if (heroRef.current) {
-            const tl = gsap.timeline();
-            
-            tl.fromTo(
-                '.hero-title',
-                { opacity: 0, y: 50 },
-                { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }
-            )
-            .fromTo(
-                '.hero-subtitle',
-                { opacity: 0, y: 30 },
-                { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' },
-                '-=0.5'
-            )
-            .fromTo(
-                '.hero-buttons',
-                { opacity: 0, scale: 0.8 },
-                { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
-                '-=0.4'
-            )
-            .fromTo(
-                '.hero-features',
-                { opacity: 0, y: 20 },
-                { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out' },
-                '-=0.3'
-            );
-        }
-
-        // Features section animation
-        if (featuresRef.current) {
-            gsap.fromTo(
-                '.feature-card',
-                { opacity: 0, y: 50, scale: 0.9 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.8,
-                    stagger: 0.2,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: featuresRef.current,
-                        start: 'top 80%',
-                        end: 'bottom 20%',
-                        toggleActions: 'play none none reverse',
-                    },
-                }
-            );
-        }
-
-        // Courses section animation
-        if (coursesRef.current) {
-            gsap.fromTo(
-                '.course-card',
-                { opacity: 0, x: -30, rotateY: -10 },
-                {
-                    opacity: 1,
-                    x: 0,
-                    rotateY: 0,
-                    duration: 0.8,
-                    stagger: 0.15,
-                    ease: 'power2.out',
-                    scrollTrigger: {
-                        trigger: coursesRef.current,
-                        start: 'top 80%',
-                        toggleActions: 'play none none reverse',
-                    },
-                }
-            );
-        }
-
-        // Stats section animation
-        if (statsRef.current) {
-            gsap.fromTo(
-                '.stat-item',
-                { opacity: 0, scale: 0.5 },
-                {
-                    opacity: 1,
-                    scale: 1,
-                    duration: 0.6,
-                    stagger: 0.1,
-                    ease: 'back.out(1.7)',
-                    scrollTrigger: {
-                        trigger: statsRef.current,
-                        start: 'top 80%',
-                        toggleActions: 'play none none reverse',
-                    },
-                }
-            );
-        }
-
-        return () => {
-            ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-        };
-    }, [courses]);
+    const { role } = usePage().props as any;
 
     return (
         <>
@@ -246,200 +130,99 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Features Section */}
-                <section
-                    id="features"
-                    ref={featuresRef}
-                    className="scroll-mt-20 px-6 py-20 lg:px-8"
-                >
-                    <div className="mx-auto max-w-6xl">
-                        <div className="mb-16 text-center">
-                            <h2 className="mb-4 text-4xl font-bold lg:text-5xl">
-                                Why Choose BardeLingo?
+                {/* Courses Browser Section */}
+                {role === 'student' && (
+                    <section className="px-6 py-12 lg:px-8">
+                        <div className="mx-auto max-w-4xl">
+                            <h2 className="mb-6 text-3xl font-bold text-center">
+                                Browse Courses
                             </h2>
-                            <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-                                Experience language learning like never before with our innovative features
-                            </p>
-                        </div>
-
-                        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                                    <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Personalized Learning</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    AI-powered courses that adapt to your learning style and pace
-                                </p>
-                            </div>
-
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                                    <MessageCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Real Conversations</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Practice with native speakers and AI chatbots in real-world scenarios
-                                </p>
-                            </div>
-
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
-                                    <BarChart3 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Track Progress</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Detailed analytics and insights to monitor your improvement
-                                </p>
-                            </div>
-
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30">
-                                    <Gamepad2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Gamified Experience</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Earn points, unlock achievements, and compete with friends
-                                </p>
-                            </div>
-
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
-                                    <Smartphone className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Learn Anywhere</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Access courses on any device, online or offline
-                                </p>
-                            </div>
-
-                            <div className="feature-card group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:-translate-y-2 dark:border-gray-800 dark:bg-gray-900">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                                    <Award className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                                </div>
-                                <h3 className="mb-3 text-xl font-semibold">Certification</h3>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                    Earn recognized certificates upon course completion
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Courses Section */}
-                <section
-                    id="courses"
-                    ref={coursesRef}
-                    className="scroll-mt-20 bg-gray-50 px-6 py-20 dark:bg-gray-900/50 lg:px-8"
-                >
-                    <div className="mx-auto max-w-6xl">
-                        <div className="mb-16 text-center">
-                            <h2 className="mb-4 text-4xl font-bold lg:text-5xl">
-                                Explore Our Courses
-                            </h2>
-                            <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-                                Start your language journey with our expertly crafted courses
-                            </p>
-                        </div>
-
-                        {courses.length > 0 ? (
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {courses.map((course) => (
-                                    <div
-                                        key={course.id}
-                                        className="course-card group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 dark:border-gray-800 dark:bg-gray-900"
-                                    >
-                                        <div className="mb-4 flex items-center justify-between">
-                                            {course.language?.flag_icon ? (
-                                                <span className="text-4xl">
-                                                    {course.language.flag_icon}
-                                                </span>
-                                            ) : (
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                                                    <Globe className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                                                </div>
-                                            )}
-                                            {course.is_published && (
-                                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                    Available
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <h3 className="mb-2 text-xl font-semibold group-hover:text-purple-600 transition-colors dark:group-hover:text-purple-400">
-                                            {course.title}
-                                        </h3>
-                                        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                                            {course.description || 'Start your journey with this comprehensive course'}
-                                        </p>
-                                        <div className="mb-4 flex items-center gap-2">
-                                            <Badge variant="outline" className="text-xs">
-                                                {course.level || 'All Levels'}
-                                            </Badge>
-                                            {course.language && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    {course.language.name}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    className="w-full rounded-full bg-purple-600 font-medium hover:shadow-lg hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
-                                                    type="button"
+                            {courses.length > 0 ? (
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    {courses.map((course) => (
+                                        <div
+                                            key={course.id}
+                                            className="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-neutral-900 shadow-sm"
+                                        >
+                                            <h3 className="text-xl font-semibold mb-2">
+                                                {course.title}
+                                            </h3>
+                                            <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                                                {course.description || 'No description'}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                                                <span>Level: {course.level || 'N/A'}</span>
+                                                <span
+                                                    className={
+                                                        course.is_published
+                                                            ? 'text-green-600 dark:text-green-400'
+                                                            : 'text-red-600 dark:text-red-400'
+                                                    }
                                                 >
-                                                    Start Course
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Ready to Start?</DialogTitle>
-                                                    <DialogDescription>
-                                                        Begin your journey with "{course.title}" and unlock your language potential.
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <DialogFooter className="flex flex-col gap-2 sm:flex-row">
-                                                    <Button
-                                                        onClick={() => {
-                                                            router.post(
-                                                                `/courses/${course.id}/enroll`,
-                                                                {},
-                                                                {
-                                                                    onSuccess: () =>
-                                                                        router.visit('/dashboard'),
-                                                                }
-                                                            );
-                                                        }}
-                                                        className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
-                                                    >
-                                                        Yes, Start Now
+                                                    {course.is_published
+                                                        ? 'Publié'
+                                                        : 'Non publié'}
+                                                </span>
+                                            </div>
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button className="rounded-full px-6 py-2 text-sm font-medium">
+                                                        Start Course
                                                     </Button>
-                                                    <DialogClose asChild>
-                                                        <Button variant="outline" className="w-full">
-                                                            Maybe Later
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>
+                                                            Confirmer
+                                                            l'inscription
+                                                        </DialogTitle>
+                                                        <DialogDescription>
+                                                            Êtes-vous sûr de
+                                                            vouloir commencer
+                                                            le cours «{' '}
+                                                            {course.title} » ?
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <DialogFooter className="flex flex-col gap-2 items-center">
+                                                        <Button
+                                                            onClick={() => {
+                                                                router.post(
+                                                                    `/courses/${course.id}/enroll`,
+                                                                    {},
+                                                                    {
+                                                                        onSuccess: () =>
+                                                                            router.visit(
+                                                                                '/dashboard'
+                                                                            ),
+                                                                    }
+                                                                );
+                                                            }}
+                                                            className="w-56 max-w-full"
+                                                        >
+                                                            Oui, commencer le cours
                                                         </Button>
-                                                    </DialogClose>
-                                                </DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center">
-                                <p className="mb-6 text-gray-600 dark:text-gray-400">
-                                    New courses are coming soon! Check back later.
+                                                        <DialogClose asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-56 max-w-full"
+                                                            >
+                                                                Annuler
+                                                            </Button>
+                                                        </DialogClose>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground">
+                                    No courses available at the moment.
                                 </p>
-                                <Button
-                                    variant="outline"
-                                    className="rounded-full"
-                                    onClick={() => router.visit('/register')}
-                                >
-                                    Get Notified
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </section>
+                            )}
+                        </div>
+                    </section>
+                )}
 
                 {/* Stats Section */}
                 <section ref={statsRef} id="about" className="scroll-mt-20 px-6 py-20 lg:px-8">

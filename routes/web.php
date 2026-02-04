@@ -5,14 +5,15 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    $courses = \App\Models\Course::with('language:id,name,flag_icon')
-        ->where('is_published', true)
-        ->orderBy('order')
+    $user = auth()->user();
+    $role = $user ? $user->role : null;
+    $courses = \App\Models\Course::orderBy('order')
         ->get(['id', 'title', 'description', 'level', 'language_id', 'is_published']);
 
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
         'courses' => $courses,
+        'role' => $role,
     ]);
 })->name('home');
 
