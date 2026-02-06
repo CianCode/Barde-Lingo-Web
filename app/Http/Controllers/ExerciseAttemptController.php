@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\LogsInteractions;
 use App\Models\Exercise;
 use App\Models\ExerciseAttempt;
 use App\Models\LessonProgress;
@@ -10,6 +11,8 @@ use Illuminate\Http\Request;
 
 class ExerciseAttemptController extends Controller
 {
+    use LogsInteractions;
+
     public function submit(Request $request, Exercise $exercise): RedirectResponse
     {
         $user = auth()->user();
@@ -83,6 +86,27 @@ class ExerciseAttemptController extends Controller
         }
 
         $lessonProgress->save();
+
+        // Log the exercise attempt
+        $this->logExerciseAttempt($exercise->id, $isPassed, [
+            'score' => $score,
+            'max_score' => 100,
+            'correct_answers' => $correctAnswers,
+            'total_questions' => $totalQuestions,
+            'attempt_number' => $attempt->attempt_number,
+            'lesson_id' => $exercise->lesson_id,
+            'exercise_type' => $exercise->type,
+            'time_spent' => request()->input('time_spent'),
+        ]);
+
+        // Log lesson progress if completed
+        if ($isPassed && $lessonProgress->is_completed && $lessonProgress->wasChanged('is_completed')) {
+            $this->logLessonProgress($exercise->lesson_id, 'completed', [
+                'final_score' => $lessonProgress->best_score,
+                'total_attempts' => $lessonProgress->attempts,
+                'total_views' => $lessonProgress->views,
+            ]);
+        }
 
         return back()->with('exerciseResult', [
             'success' => true,

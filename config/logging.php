@@ -127,6 +127,30 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'queries' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queries.log'),
+            'level' => 'debug',
+            'days' => 7,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+        ],
+
+        'interactions' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/interactions.log'),
+            'level' => 'info',
+            'days' => 14,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+        ],
+
+        'navigation' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/navigation.log'),
+            'level' => 'info',
+            'days' => 14,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+        ],
+
     ],
 
 ];

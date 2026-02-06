@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\LogsInteractions;
 use App\Events\MessageSent;
 use App\Events\MessagesRead;
 use App\Http\Requests\StoreMessageRequest;
@@ -12,6 +13,8 @@ use Inertia\Inertia;
 
 class ConversationController extends Controller
 {
+    use LogsInteractions;
+
     /**
      * Display a listing of conversations for the authenticated user.
      */
@@ -151,6 +154,21 @@ class ConversationController extends Controller
         // Broadcast the message
         broadcast(new MessageSent($message))->toOthers();
 
+        // Log message sent
+        $this->logInteraction('Message Sent', [
+            'conversation_id' => $conversation->id,
+            'message_id' => $message->id,
+            'message_length' => strlen($request->message),
+            'recipient_id' => $user->role === 'student' ? $conversation->teacher_id : $conversation->student_id,
+            'recipient_role' => $user->role === 'student' ? 'teacher' : 'student',
+        ]);
+
+        // Log feature usage: messaging
+        $this->logFeatureUsage('chat_messaging', [
+            'conversation_id' => $conversation->id,
+            'user_role' => $user->role,
+        ]);
+
         return back();
     }
 
@@ -178,6 +196,14 @@ class ConversationController extends Controller
                 'last_message_at' => now(),
             ]
         );
+
+        // Log conversation creation (if new)
+        if ($conversation->wasRecentlyCreated) {
+            $this->logResourceAction('conversation', 'created', $conversation->id, [
+                'student_id' => $user->id,
+                'teacher_id' => $request->teacher_id,
+            ]);
+        }
 
         return redirect()->route('conversations.show', $conversation);
     }

@@ -5,9 +5,10 @@ This directory contains Grafana Alloy configuration for collecting application l
 ## Configuration
 
 1. Edit `config.alloy` and replace `LOKI_VM_IP` and `LOKI_PORT` with your colleague's Loki instance details:
-   ```alloy
-   url = "http://YOUR_COLLEAGUE_LOKI_IP:3100/loki/api/v1/push"
-   ```
+
+    ```alloy
+    url = "http://YOUR_COLLEAGUE_LOKI_IP:3100/loki/api/v1/push"
+    ```
 
 2. If authentication is required, uncomment and configure the `basic_auth` section.
 
@@ -33,6 +34,7 @@ curl http://localhost:12345/-/healthy
 ## Firewall Configuration
 
 Make sure your VM can reach your colleague's Loki instance:
+
 - Outbound traffic to Loki VM IP on port 3100 (or configured port)
 - Your colleague should configure their firewall to accept connections from your VM IP
 
@@ -45,6 +47,7 @@ Make sure your VM can reach your colleague's Loki instance:
 ## Labels Applied
 
 All logs are tagged with:
+
 - `app`: barde_lingo
 - `env`: production
 - `source`: barde_lingo_vm

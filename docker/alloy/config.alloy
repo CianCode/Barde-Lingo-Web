@@ -95,11 +95,124 @@ loki.process "nginx_error" {
   forward_to = [loki.write.remote_loki.receiver]
 }
 
+// Collect database query logs
+local.file_match "query_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/laravel/queries-*.log",
+  }]
+}
+
+loki.source.file "queries" {
+  targets    = local.file_match.query_logs.targets
+  forward_to = [loki.process.queries.receiver]
+}
+
+loki.process "queries" {
+  stage.json {
+    expressions = {
+      sql        = "context.sql",
+      time       = "context.time",
+      connection = "context.connection",
+      user_id    = "context.user_id",
+      url        = "context.url",
+      method     = "context.method",
+    }
+  }
+
+  stage.labels {
+    values = {
+      app        = "barde_lingo",
+      env        = "production",
+      type       = "database_query",
+      connection = "",
+      method     = "",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
+// Collect user interaction logs
+local.file_match "interaction_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/laravel/interactions-*.log",
+  }]
+}
+
+loki.source.file "interactions" {
+  targets    = local.file_match.interaction_logs.targets
+  forward_to = [loki.process.interactions.receiver]
+}
+
+loki.process "interactions" {
+  stage.json {
+    expressions = {
+      message  = "message",
+      user_id  = "context.user_id",
+      action   = "context.action",
+      resource = "context.resource",
+      feature  = "context.feature",
+      url      = "context.url",
+    }
+  }
+
+  stage.labels {
+    values = {
+      app    = "barde_lingo",
+      env    = "production",
+      type   = "user_interaction",
+      action = "",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
+// Collect navigation/page view logs
+local.file_match "navigation_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/laravel/navigation-*.log",
+  }]
+}
+
+loki.source.file "navigation" {
+  targets    = local.file_match.navigation_logs.targets
+  forward_to = [loki.process.navigation.receiver]
+}
+
+loki.process "navigation" {
+  stage.json {
+    expressions = {
+      message   = "message",
+      url       = "context.url",
+      path      = "context.path",
+      component = "context.component",
+      user_id   = "context.user_id",
+      method    = "context.method",
+    }
+  }
+
+  stage.labels {
+    values = {
+      app       = "barde_lingo",
+      env       = "production",
+      type      = "navigation",
+      method    = "",
+      component = "",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
 // Send logs to remote Loki instance
 loki.write "remote_loki" {
   endpoint {
     url = "http://10.129.220.11:3100/loki/api/v1/push"
-    
+
     // Uncomment and configure if authentication is required
     // basic_auth {
     //   username = "your_username"

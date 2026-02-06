@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureQueryLogging();
     }
 
     protected function configureDefaults(): void
@@ -43,5 +44,25 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null
         );
+    }
+
+    protected function configureQueryLogging(): void
+    {
+        if (! app()->environment('local', 'testing')) {
+            DB::listen(function ($query) {
+                $logger = \Illuminate\Support\Facades\Log::channel('queries');
+
+                $logger->info('Database Query', [
+                    'sql' => $query->sql,
+                    'bindings' => $query->bindings,
+                    'time' => $query->time,
+                    'connection' => $query->connectionName,
+                    'user_id' => auth()->id(),
+                    'ip' => request()->ip(),
+                    'url' => request()->fullUrl(),
+                    'method' => request()->method(),
+                ]);
+            });
+        }
     }
 }

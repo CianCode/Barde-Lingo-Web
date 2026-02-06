@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\LogsInteractions;
 use App\Http\Requests\StoreLessonRequest;
 use App\Http\Requests\UpdateLessonRequest;
 use App\Models\Exercise;
@@ -14,6 +15,8 @@ use Inertia\Response;
 
 class LessonController extends Controller
 {
+    use LogsInteractions;
+
     /**
      * Display the specified lesson (lecture seule pour étudiants).
      */
@@ -39,6 +42,32 @@ class LessonController extends Controller
                 $progress->update([
                     'is_completed' => true,
                     'completed_at' => now(),
+                ]);
+
+                // Log automatic lesson completion
+                $this->logLessonProgress($lesson->id, 'auto_completed', [
+                    'module_id' => $lesson->module_id,
+                    'course_id' => $lesson->module->course_id,
+                    'lesson_title' => $lesson->title,
+                ]);
+            }
+
+            // Log lesson view
+            $this->logInteraction('Lesson Viewed', [
+                'lesson_id' => $lesson->id,
+                'lesson_title' => $lesson->title,
+                'module_id' => $lesson->module_id,
+                'course_id' => $lesson->module->course_id,
+                'view_count' => $progress->views,
+                'is_completed' => $progress->is_completed,
+                'has_exercises' => $lesson->exercises->count() > 0,
+            ]);
+
+            // Track feature usage: content access
+            if ($lesson->contents->count() > 0) {
+                $this->logFeatureUsage('lesson_content_access', [
+                    'lesson_id' => $lesson->id,
+                    'content_count' => $lesson->contents->count(),
                 ]);
             }
 
