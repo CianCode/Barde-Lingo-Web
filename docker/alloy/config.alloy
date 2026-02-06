@@ -1,0 +1,114 @@
+// Alloy configuration for collecting logs and sending to remote Loki
+
+// Collect Laravel application logs
+local.file_match "laravel_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/laravel/*.log",
+  }]
+}
+
+loki.source.file "laravel" {
+  targets    = local.file_match.laravel_logs.targets
+  forward_to = [loki.process.laravel.receiver]
+}
+
+loki.process "laravel" {
+  stage.json {
+    expressions = {
+      level   = "level",
+      message = "message",
+      context = "context",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+      app   = "barde_lingo",
+      env   = "production",
+      type  = "laravel",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
+// Collect nginx access logs
+local.file_match "nginx_access_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/nginx/access.log",
+  }]
+}
+
+loki.source.file "nginx_access" {
+  targets    = local.file_match.nginx_access_logs.targets
+  forward_to = [loki.process.nginx_access.receiver]
+}
+
+loki.process "nginx_access" {
+  stage.regex {
+    expression = "^(?P<remote_addr>[\\w\\.]+) - (?P<remote_user>\\S+) \\[(?P<time_local>[^\\]]+)\\] \"(?P<method>\\S+) (?P<path>\\S+) (?P<protocol>\\S+)\" (?P<status>\\d+) (?P<body_bytes_sent>\\d+)"
+  }
+
+  stage.labels {
+    values = {
+      status = "",
+      method = "",
+      app    = "barde_lingo",
+      env    = "production",
+      type   = "nginx_access",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
+// Collect nginx error logs
+local.file_match "nginx_error_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/nginx/error.log",
+  }]
+}
+
+loki.source.file "nginx_error" {
+  targets    = local.file_match.nginx_error_logs.targets
+  forward_to = [loki.process.nginx_error.receiver]
+}
+
+loki.process "nginx_error" {
+  stage.regex {
+    expression = "^(?P<timestamp>[\\d\\/]+ [\\d:]+) \\[(?P<level>\\w+)\\] (?P<message>.*)$"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+      app   = "barde_lingo",
+      env   = "production",
+      type  = "nginx_error",
+    }
+  }
+
+  forward_to = [loki.write.remote_loki.receiver]
+}
+
+// Send logs to remote Loki instance
+loki.write "remote_loki" {
+  endpoint {
+    url = "http://10.129.220.11:3100/loki/api/v1/push"
+    
+    // Uncomment and configure if authentication is required
+    // basic_auth {
+    //   username = "your_username"
+    //   password = "your_password"
+    // }
+  }
+
+  external_labels = {
+    source   = "barde_lingo_vm",
+    hostname = env("HOSTNAME"),
+  }
+}

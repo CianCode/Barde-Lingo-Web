@@ -41,7 +41,7 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./docker/nginx/reverb.conf:/etc/nginx/conf.d/reverb.conf
       - app_public:/var/www/public:ro
-      - ./storage/logs/nginx:/var/log/nginx
+      - nginx_logs:/var/log/nginx
       - nginx_cache:/var/cache/nginx
     networks:
       - barde_lingo_network
@@ -70,6 +70,26 @@ services:
       timeout: 10s
       retries: 3
 
+  alloy:
+    image: grafana/alloy:latest
+    container_name: barde_lingo_alloy
+    restart: unless-stopped
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./docker/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./storage/logs:/var/log/laravel:ro
+      - nginx_logs:/var/log/nginx:ro
+      - alloy_data:/var/lib/alloy/data
+    networks:
+      - barde_lingo_network
+    environment:
+      - HOSTNAME=${HOSTNAME:-barde_lingo_vm}
+    depends_on:
+      - nginx
+      - app
+
 networks:
   barde_lingo_network:
     driver: bridge
@@ -80,4 +100,8 @@ volumes:
   app_public:
     driver: local
   nginx_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+  alloy_data:
     driver: local
