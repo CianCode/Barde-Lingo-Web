@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
+import { markAsRead } from '@/actions/App/Http/Controllers/ConversationController';
 
 interface User {
     id: number;
@@ -139,16 +140,7 @@ export default function ConversationShow({
                 ]);
 
                 // Notify sender that message was read
-                fetch(`/conversations/${conversation.id}/mark-as-read`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN':
-                            document
-                                .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') || '',
-                        Accept: 'application/json',
-                    },
-                });
+                markAsRead({ conversation: conversation.id });
             } else {
                 // Add our own sent message
                 setAllMessages((prev) => [...prev, event.message]);
